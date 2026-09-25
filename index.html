@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LoveCoffee</title>
+<style>
+  :root{
+    --bg:#fbf6f0; --card:#fff; --ink:#2b1a12; --muted:#8a6f5e;
+    --brand:#6f4e37; --brand-dark:#4a3120; --accent:#d98e4a; --line:#e8d9cb;
+    --ok:#3d8b52; --danger:#c0392b;
+    padding-top: env(safe-area-inset-top,0px); padding-bottom: env(safe-area-inset-bottom,0px);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#1c1512; --card:#241a15; --ink:#f3e9df; --muted:#b39a89;
+      --brand:#c9a27b; --brand-dark:#e4c9a8; --accent:#e0964f; --line:#3a2c22;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#1c1512; --card:#241a15; --ink:#f3e9df; --muted:#b39a89;
+    --brand:#c9a27b; --brand-dark:#e4c9a8; --accent:#e0964f; --line:#3a2c22;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-padding-top:env(safe-area-inset-top,0px);}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:'Georgia', 'Segoe UI', serif;
+    min-height:100%;
+  }
+  header{
+    position:sticky; top:0; z-index:10;
+    padding:calc(14px + env(safe-area-inset-top,0px)) 20px 14px;
+    background:var(--brand); color:#fff;
+    display:flex; align-items:center; justify-content:space-between;
+    box-shadow:0 2px 8px rgba(0,0,0,.15);
+  }
+  header .logo{font-size:1.4rem; font-weight:bold; letter-spacing:.5px;}
+  header .logo span{color:var(--accent);}
+  nav button{
+    background:transparent; border:1px solid rgba(255,255,255,.5); color:#fff;
+    padding:8px 14px; border-radius:20px; cursor:pointer; font-size:.85rem;
+    margin-left:8px;
+  }
+  nav button.active{background:#fff; color:var(--brand-dark); border-color:#fff;}
+  main{max-width:900px; margin:0 auto; padding:20px; padding-bottom:80px;}
+  .hero{
+    text-align:center; padding:30px 16px; margin-bottom:20px;
+    background:linear-gradient(135deg,var(--brand),var(--brand-dark)); color:#fff;
+    border-radius:16px;
+  }
+  .hero h1{margin:0 0 6px; font-size:1.8rem;}
+  .hero p{margin:0; opacity:.9;}
+  .menu-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px;}
+  .item-card{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:16px; display:flex; flex-direction:column; gap:8px;
+  }
+  .item-card h3{margin:0; font-size:1.1rem;}
+  .item-card .desc{color:var(--muted); font-size:.85rem; min-height:32px;}
+  .item-card .price{font-weight:bold; color:var(--accent); font-size:1.1rem;}
+  .item-card .row{display:flex; align-items:center; justify-content:space-between; gap:8px;}
+  .qty{display:flex; align-items:center; gap:8px;}
+  .qty button{
+    width:28px; height:28px; border-radius:50%; border:1px solid var(--line);
+    background:var(--bg); color:var(--ink); cursor:pointer; font-size:1rem;
+  }
+  .add-btn{
+    background:var(--brand); color:#fff; border:none; border-radius:20px;
+    padding:8px 16px; cursor:pointer; font-size:.9rem;
+  }
+  .add-btn:hover{background:var(--brand-dark);}
+  .cart-panel{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:18px; margin-top:24px;
+  }
+  .cart-panel h2{margin-top:0;}
+  .cart-line{display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed var(--line); font-size:.95rem;}
+  .cart-total{display:flex; justify-content:space-between; font-weight:bold; padding-top:10px; font-size:1.1rem;}
+  .empty{color:var(--muted); font-style:italic;}
+  form.order-form{display:flex; flex-direction:column; gap:10px; margin-top:14px;}
+  form.order-form input, form.order-form select, form.order-form textarea{
+    padding:10px; border-radius:8px; border:1px solid var(--line);
+    background:var(--bg); color:var(--ink); font-family:inherit; font-size:.95rem;
+  }
+  .submit-btn{
+    background:var(--accent); color:#3a2410; border:none; border-radius:10px;
+    padding:12px; font-weight:bold; cursor:pointer; font-size:1rem;
+  }
+  .submit-btn:hover{filter:brightness(1.05);}
+  .msg{padding:10px 14px; border-radius:8px; margin-top:10px; font-size:.9rem;}
+  .msg.ok{background:rgba(61,139,82,.15); color:var(--ok); border:1px solid var(--ok);}
+  .msg.err{background:rgba(192,57,43,.15); color:var(--danger); border:1px solid var(--danger);}
+
+  /* Admin */
+  .admin-login{max-width:360px; margin:60px auto; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:24px;}
+  .admin-login h2{margin-top:0;}
+  .admin-login input{width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid var(--line); background:var(--bg); color:var(--ink);}
+  table{width:100%; border-collapse:collapse; background:var(--card); border-radius:10px; overflow:hidden;}
+  th,td{padding:10px; text-align:left; border-bottom:1px solid var(--line); font-size:.85rem;}
+  th{background:var(--brand); color:#fff;}
+  .status-select{padding:5px; border-radius:6px; border:1px solid var(--line); background:var(--bg); color:var(--ink);}
+  .badge{padding:3px 8px; border-radius:12px; font-size:.75rem; color:#fff;}
+  .badge.new{background:#d98e4a;}
+  .badge.progress{background:#3d7ab8;}
+  .badge.done{background:var(--ok);}
+  .badge.cancel{background:var(--danger);}
+  .table-wrap{overflow-x:auto;}
+  .admin-toolbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px;}
+  .logout-btn{background:transparent; border:1px solid var(--line); color:var(--ink); padding:6px 12px; border-radius:8px; cursor:pointer;}
+  .menu-edit-row{display:grid; grid-template-columns:1fr 2fr 1fr auto; gap:8px; margin-bottom:8px; align-items:center;}
+  .menu-edit-row input{padding:8px; border-radius:6px; border:1px solid var(--line); background:var(--bg); color:var(--ink);}
+  .del-btn{background:var(--danger); color:#fff; border:none; border-radius:6px; padding:8px; cursor:pointer;}
+  .section-title{margin-top:30px;}
+  footer{text-align:center; padding:20px; color:var(--muted); font-size:.8rem;}
+  .support-banner{
+    max-width:900px; margin:0 auto; margin-top:10px;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    flex-wrap:wrap; text-align:center;
+    background:rgba(217,142,74,.15); border:1px solid var(--accent);
+    color:var(--ink); padding:12px 16px; border-radius:12px; font-size:.9rem;
+  }
+  .support-banner a{
+    color:var(--brand); font-weight:bold; text-decoration:none;
+    border-bottom:1px dashed var(--brand);
+  }
+  .support-banner a:hover{color:var(--brand-dark);}
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Love<span>Coffee</span></div>
+  <nav>
+    <button id="navShop" class="active">Меню</button>
+    <button id="navAdmin" class="hidden">Адмін</button>
+  </nav>
+</header>
+
+<main>
+  <!-- SHOP VIEW -->
+  <div id="shopView">
+    <div class="hero">
+      <h1>☕ LoveCoffee</h1>
+      <p>Смачна кава з любов'ю. Оберіть напій та оформіть замовлення онлайн.</p>
+    </div>
+
+    <div id="menuGrid" class="menu-grid"></div>
+
+    <div class="cart-panel">
+      <h2>🛒 Кошик</h2>
+      <div id="cartLines"><p class="empty">Кошик порожній</p></div>
+      <div id="cartTotalWrap" class="hidden">
+        <div class="cart-total"><span>Разом:</span><span id="cartTotal">0 грн</span></div>
+      </div>
+
+      <form class="order-form" id="orderForm">
+        <input type="text" id="custName" placeholder="Ваше ім'я" required>
+        <input type="tel" id="custPhone" placeholder="Телефон" required>
+        <select id="custMode">
+          <option value="pickup">Самовивіз</option>
+          <option value="delivery">Доставка</option>
+        </select>
+        <input type="text" id="custAddress" placeholder="Адреса (якщо доставка)">
+        <textarea id="custNote" placeholder="Коментар до замовлення" rows="2"></textarea>
+        <button type="submit" class="submit-btn">Оформити замовлення</button>
+      </form>
+      <div id="orderMsg"></div>
+    </div>
+  </div>
+
+  <!-- ADMIN VIEW -->
+  <div id="adminView" class="hidden">
+    <div id="adminLoginBox" class="admin-login">
+      <h2>Вхід в адмін-панель</h2>
+      <input type="password" id="adminPass" placeholder="Пароль">
+      <button class="submit-btn" id="adminLoginBtn" style="width:100%">Увійти</button>
+      <div id="adminLoginMsg"></div>
+      <p style="color:var(--muted); font-size:.8rem; margin-top:10px;">Пароль за замовчуванням: <b>lovecoffee2026</b> (можна змінити в коді, шукайте ADMIN_PASSWORD)</p>
+    </div>
+
+    <div id="adminPanel" class="hidden">
+      <div class="admin-toolbar">
+        <h2 style="margin:0;">Панель адміністратора</h2>
+        <button class="logout-btn" id="logoutBtn">Вийти</button>
+      </div>
+
+      <h3>📋 Замовлення</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Клієнт</th><th>Телефон</th><th>Спосіб</th><th>Товари</th><th>Сума</th><th>Статус</th></tr>
+          </thead>
+          <tbody id="ordersBody"></tbody>
+        </table>
+      </div>
+      <p id="noOrders" class="empty hidden">Замовлень поки немає.</p>
+
+      <h3 class="section-title">🧾 Меню (ціни та позиції)</h3>
+      <div id="menuEditList"></div>
+      <div class="menu-edit-row">
+        <input type="text" id="newItemName" placeholder="Назва">
+        <input type="text" id="newItemDesc" placeholder="Опис">
+        <input type="number" id="newItemPrice" placeholder="Ціна">
+        <button class="add-btn" id="addMenuItemBtn">Додати</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="support-banner">
+  <span>⚠️ Виникли проблеми із замовленням чи сайтом?</span>
+  <a href="#" id="supportLink">Звернутися в підтримку</a>
+</div>
+
+<footer>© 2026 LoveCoffee — зроблено з ❤️ та кавою</footer>
+
+<script>
+(function(){
+  const ADMIN_PASSWORD = "lovecoffee2026";
+
+  const DEFAULT_MENU = [
+    {id:'esp', name:'Еспресо', desc:'Класичний міцний еспресо', price:45},
+    {id:'americano', name:'Американо', desc:'Еспресо з гарячою водою', price:50},
+    {id:'cap', name:'Капучино', desc:'Еспресо з ніжною молочною пінкою', price:65},
+    {id:'latte', name:'Лате', desc:'Мʼякий кавовий смак з молоком', price:70},
+    {id:'raf', name:'Раф', desc:'Кава на вершках з ванільним цукром', price:75},
+    {id:'moc', name:'Мокачіно', desc:'Кава з шоколадом і молоком', price:80},
+  ];
+
+  function load(key, fallback){
+    try{
+      const v = localStorage.getItem(key);
+      return v ? JSON.parse(v) : fallback;
+    }catch(e){ return fallback; }
+  }
+  function save(key, val){
+    try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){}
+  }
+
+  let menu = load('lc_menu', DEFAULT_MENU);
+  let orders = load('lc_orders', []);
+  let cart = {}; // id -> qty
+  let isAdmin = false;
+
+  // ---------- SHOP RENDER ----------
+  function renderMenu(){
+    const grid = document.getElementById('menuGrid');
+    grid.innerHTML = '';
+    menu.forEach(item=>{
+      const qty = cart[item.id] || 0;
+      const card = document.createElement('div');
+      card.className = 'item-card';
+      card.innerHTML = `
+        <h3>${escapeHtml(item.name)}</h3>
+        <div class="desc">${escapeHtml(item.desc||'')}</div>
+        <div class="row">
+          <span class="price">${item.price} грн</span>
+          <div class="qty">
+            <button data-act="dec" data-id="${item.id}">−</button>
+            <span>${qty}</span>
+            <button data-act="inc" data-id="${item.id}">+</button>
+          </div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+    grid.querySelectorAll('button[data-act]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const id = btn.getAttribute('data-id');
+        const act = btn.getAttribute('data-act');
+        const cur = cart[id] || 0;
+        if(act==='inc') cart[id] = cur+1;
+        else cart[id] = Math.max(0, cur-1);
+        if(cart[id]===0) delete cart[id];
+        renderMenu();
+        renderCart();
+      });
+    });
+  }
+
+  function renderCart(){
+    const linesEl = document.getElementById('cartLines');
+    const totalWrap = document.getElementById('cartTotalWrap');
+    const ids = Object.keys(cart);
+    if(ids.length===0){
+      linesEl.innerHTML = '<p class="empty">Кошик порожній</p>';
+      totalWrap.classList.add('hidden');
+      return;
+    }
+    let total = 0;
+    linesEl.innerHTML = ids.map(id=>{
+      const item = menu.find(m=>m.id===id);
+      if(!item) return '';
+      const sum = item.price * cart[id];
+      total += sum;
+      return `<div class="cart-line"><span>${escapeHtml(item.name)} × ${cart[id]}</span><span>${sum} грн</span></div>`;
+    }).join('');
+    document.getElementById('cartTotal').textContent = total + ' грн';
+    totalWrap.classList.remove('hidden');
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  document.getElementById('orderForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const msgEl = document.getElementById('orderMsg');
+    const ids = Object.keys(cart);
+    if(ids.length===0){
+      msgEl.innerHTML = '<div class="msg err">Додайте хоча б один напій у кошик.</div>';
+      return;
+    }
+    const name = document.getElementById('custName').value.trim();
+    const phone = document.getElementById('custPhone').value.trim();
+    const mode = document.getElementById('custMode').value;
+    const address = document.getElementById('custAddress').value.trim();
+    const note = document.getElementById('custNote').value.trim();
+
+    let total = 0;
+    const items = ids.map(id=>{
+      const item = menu.find(m=>m.id===id);
+      const sum = item.price * cart[id];
+      total += sum;
+      return {name:item.name, qty:cart[id], price:item.price, sum};
+    });
+
+    const order = {
+      id: Date.now(),
+      name, phone, mode, address, note,
+      items, total,
+      status: 'new',
+      createdAt: new Date().toLocaleString('uk-UA')
+    };
+    orders.unshift(order);
+    save('lc_orders', orders);
+
+    cart = {};
+    renderMenu();
+    renderCart();
+    document.getElementById('orderForm').reset();
+    msgEl.innerHTML = '<div class="msg ok">Дякуємо! Замовлення №'+order.id+' прийнято. Ми звʼяжемось з вами найближчим часом.</div>';
+    if(isAdmin) renderOrders();
+  });
+
+  // ---------- NAV ----------
+  const navShop = document.getElementById('navShop');
+  const navAdmin = document.getElementById('navAdmin');
+  const shopView = document.getElementById('shopView');
+  const adminView = document.getElementById('adminView');
+
+  // Кнопка "Адмін" прихована від звичайних відвідувачів.
+  // Щоб відкрити адмін-панель, додайте до посилання сайту ?admin=1
+  // напр.: https://your-site-link/?admin=1
+  if(new URLSearchParams(window.location.search).get('admin') === '1'){
+    navAdmin.classList.remove('hidden');
+  }
+
+  navShop.addEventListener('click', ()=>{
+    navShop.classList.add('active'); navAdmin.classList.remove('active');
+    shopView.classList.remove('hidden'); adminView.classList.add('hidden');
+  });
+  navAdmin.addEventListener('click', ()=>{
+    navAdmin.classList.add('active'); navShop.classList.remove('active');
+    adminView.classList.remove('hidden'); shopView.classList.add('hidden');
+    if(isAdmin){ renderOrders(); renderMenuEdit(); }
+  });
+
+  // ---------- ADMIN AUTH ----------
+  document.getElementById('adminLoginBtn').addEventListener('click', ()=>{
+    const pass = document.getElementById('adminPass').value;
+    const msg = document.getElementById('adminLoginMsg');
+    if(pass === ADMIN_PASSWORD){
+      isAdmin = true;
+      document.getElementById('adminLoginBox').classList.add('hidden');
+      document.getElementById('adminPanel').classList.remove('hidden');
+      renderOrders();
+      renderMenuEdit();
+    }else{
+      msg.innerHTML = '<div class="msg err">Невірний пароль.</div>';
+    }
+  });
+  document.getElementById('logoutBtn').addEventListener('click', ()=>{
+    isAdmin = false;
+    document.getElementById('adminLoginBox').classList.remove('hidden');
+    document.getElementById('adminPanel').classList.add('hidden');
+    document.getElementById('adminPass').value = '';
+  });
+
+  // ---------- ADMIN: ORDERS ----------
+  const STATUS_LABELS = {new:'Нове', progress:'Готується', done:'Виконано', cancel:'Скасовано'};
+
+  function renderOrders(){
+    const tbody = document.getElementById('ordersBody');
+    const noOrders = document.getElementById('noOrders');
+    if(orders.length===0){
+      tbody.innerHTML = '';
+      noOrders.classList.remove('hidden');
+      return;
+    }
+    noOrders.classList.add('hidden');
+    tbody.innerHTML = orders.map(o=>{
+      const itemsStr = o.items.map(i=>`${i.name} ×${i.qty}`).join(', ');
+      const modeStr = o.mode==='delivery' ? ('Доставка: '+escapeHtml(o.address||'—')) : 'Самовивіз';
+      return `<tr>
+        <td>${o.id}</td>
+        <td>${escapeHtml(o.name)}</td>
+        <td>${escapeHtml(o.phone)}</td>
+        <td>${modeStr}</td>
+        <td>${escapeHtml(itemsStr)}</td>
+        <td>${o.total} грн</td>
+        <td>
+          <select class="status-select" data-id="${o.id}">
+            ${Object.keys(STATUS_LABELS).map(s=>`<option value="${s}" ${s===o.status?'selected':''}>${STATUS_LABELS[s]}</option>`).join('')}
+          </select>
+        </td>
+      </tr>`;
+    }).join('');
+    tbody.querySelectorAll('.status-select').forEach(sel=>{
+      sel.addEventListener('change', ()=>{
+        const id = Number(sel.getAttribute('data-id'));
+        const order = orders.find(o=>o.id===id);
+        if(order){ order.status = sel.value; save('lc_orders', orders); }
+      });
+    });
+  }
+
+  // ---------- ADMIN: MENU EDIT ----------
+  function renderMenuEdit(){
+    const wrap = document.getElementById('menuEditList');
+    wrap.innerHTML = menu.map(item=>`
+      <div class="menu-edit-row">
+        <input type="text" data-field="name" data-id="${item.id}" value="${escapeHtml(item.name)}">
+        <input type="text" data-field="desc" data-id="${item.id}" value="${escapeHtml(item.desc||'')}">
+        <input type="number" data-field="price" data-id="${item.id}" value="${item.price}">
+        <button class="del-btn" data-del="${item.id}">Видалити</button>
+      </div>
+    `).join('');
+
+    wrap.querySelectorAll('input').forEach(inp=>{
+      inp.addEventListener('change', ()=>{
+        const id = inp.getAttribute('data-id');
+        const field = inp.getAttribute('data-field');
+        const item = menu.find(m=>m.id===id);
+        if(!item) return;
+        item[field] = field==='price' ? Number(inp.value) : inp.value;
+        save('lc_menu', menu);
+        renderMenu();
+      });
+    });
+    wrap.querySelectorAll('button[data-del]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const id = btn.getAttribute('data-del');
+        menu = menu.filter(m=>m.id!==id);
+        save('lc_menu', menu);
+        renderMenu();
+        renderMenuEdit();
+      });
+    });
+  }
+
+  document.getElementById('addMenuItemBtn').addEventListener('click', ()=>{
+    const name = document.getElementById('newItemName').value.trim();
+    const desc = document.getElementById('newItemDesc').value.trim();
+    const price = Number(document.getElementById('newItemPrice').value);
+    if(!name || !price){ return; }
+    const id = 'item_' + Date.now();
+    menu.push({id, name, desc, price});
+    save('lc_menu', menu);
+    document.getElementById('newItemName').value='';
+    document.getElementById('newItemDesc').value='';
+    document.getElementById('newItemPrice').value='';
+    renderMenu();
+    renderMenuEdit();
+  });
+
+  // ---------- SUPPORT LINK ----------
+  // Вставте посилання на вашого тг-бота підтримки замість "#" нижче
+  const SUPPORT_LINK = "#"; // напр. "https://t.me/your_support_bot"
+  document.getElementById('supportLink').setAttribute('href', SUPPORT_LINK);
+
+  // ---------- INIT ----------
+  renderMenu();
+  renderCart();
+})();
+</script>
+
+</body>
+</html>
